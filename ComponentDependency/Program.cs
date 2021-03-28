@@ -9,7 +9,33 @@ namespace ComponentDependency
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+
+            DoComponentDependency();
+
+            Do_DFS_BFS();
+        }
+
+        public static void Do_DFS_BFS()
+        {
+            //[[1,0],[2,0],[0,5],[5,6],[6,6],[3,1],[3,2]] start = 3
+            //(01)(02)(12)(20)(23)(33) Start = 2
+            
+            Graph graph = new Graph();
+            graph.AddEdge(1, 0);
+            graph.AddEdge(2, 0);
+            graph.AddEdge(0, 5);
+            graph.AddEdge(5, 6);
+            graph.AddEdge(6, 6);
+            graph.AddEdge(3, 1);
+            graph.AddEdge(3, 2);
+
+            graph.DFS(3);
+            graph.ResetAdjList();
+            graph.BFS(3);
+        }
+
+        public static void DoComponentDependency()
+        {
             string[] inputs = {
                 "DEPEND TELNET TCPIP NETCARD",
                 "DEPEND TCPIP NETCARD",
@@ -28,7 +54,7 @@ namespace ComponentDependency
                 "END"
             };
             Console.WriteLine("******Inputs********");
-            foreach(string s in inputs)
+            foreach (string s in inputs)
             {
                 Console.WriteLine(s);
             }
@@ -36,7 +62,6 @@ namespace ComponentDependency
             DoIt(inputs);
         }
 
-        
         public static void DoIt(string[] inputs)
         {
             List<Component> components = new List<Component>();
@@ -186,22 +211,144 @@ namespace ComponentDependency
 
 
     }
-}
 
-
-public class Component
-{
-    
-    public Component(string name)
+    public class Component
     {
-        Name = name;
-        IsInstalled = false;
-        InstalledExplicitly = false;
-        Dependencies = new List<string>();
+
+        public Component(string name)
+        {
+            Name = name;
+            IsInstalled = false;
+            InstalledExplicitly = false;
+            Dependencies = new List<string>();
+        }
+        public string Name { get; set; }
+        public bool IsInstalled { get; set; }
+        public bool InstalledExplicitly { get; set; }
+        public List<string> Dependencies { get; set; }
+
     }
-    public string Name { get; set; }
-    public bool IsInstalled { get; set; }
-    public bool InstalledExplicitly { get; set; }
-    public List<string> Dependencies { get; set; }
+
+    public class Node
+    {
+        public Node(int v)
+        {
+            V = v;
+            visited = false;
+            Edges = new List<Node>();
+        }
+        public int V { get; set; }
+        public bool visited { get; set; }
+        public List<Node> Edges { get; set; }
+
+        public void Addedge(int w)
+        {
+            var edge = Edges.Find(e => e.V == w);
+            if(edge == null)
+            {
+                Edges.Add(new Node(w));
+            }
+        }
+
+    }
+
+    public class Graph
+    {
+
+        public Graph()
+        {
+            //_size = size;
+            //g = new List<Node>(_size);
+        }
+        private int _size;
+        private List<Node> adj = new List<Node>();
+
+
+        public void AddEdge(int v,int w)
+        {
+            Node n = adj.Find(gg => gg.V == v);
+            if (n == null)
+            {
+                n = new Node(v);
+                adj.Add(n);
+            }
+            n.Addedge(w);
+            
+        }
+
+        public void ResetAdjList()
+        {
+            foreach(var n in adj)
+            {
+                n.visited = false;
+            }
+        }
+
+        public void DFS(int start)
+        {
+            Console.WriteLine("DFS Traversal:-");
+            Dodfs(start);
+            Console.WriteLine();
+        }
+        private void Dodfs(int start)
+        {
+
+            Node item = adj.Find(gg => gg.V == start);
+            if (!item.visited)
+            {
+                item.visited = true;
+                Console.Write(item.V + " ");
+
+                foreach (var n in item.Edges)
+                {
+                    Dodfs(n.V);
+                }
+            }
+            
+        }
+
+        public void BFS(int start)
+        {
+            Console.WriteLine("BFS Traversal:-");
+            Dobfs(adj.Find(a => a.V == start));
+
+        }
+        private void Dobfs(Node lst)
+        {
+
+            Queue<Node> q = new Queue<Node>();
+
+            q.Enqueue(lst);
+
+            while(q.Count > 0)
+            {
+
+                Node temp = q.Dequeue();
+                Node item = adj.Find(a => a.V == temp.V);
+                if (!item.visited)
+                {
+                    Console.Write(item.V + " ");
+                    item.visited = true;
+
+                    foreach(Node d in item.Edges)
+                    {
+                        q.Enqueue(d);
+                    }
+
+                }
+
+
+
+            }
+
+            Console.WriteLine();
+        }
+
+    }
 
 }
+
+
+
+
+
